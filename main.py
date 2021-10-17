@@ -1,6 +1,6 @@
 
+from collections import deque
 import copy
-import collections
 
 size_of_mapa = 0
 
@@ -115,11 +115,13 @@ class Node:
     # v podstate je to vytvorenie pociatocneho uzla
     global size_of_mapa
 
-    def __init__(self, cars, temp_map):
+    def __init__(self, cars, temp_map, previous_state, step):
         temp_map = creat_map(cars, temp_map)
         # atribúty
         self.cars = cars
         self.my_map = temp_map
+        self.previous_state = previous_state
+        self.step_from_previous_state = step
         pass
 
 def iterative_deepening_search(max_depht, cars):
@@ -130,12 +132,63 @@ def iterative_deepening_search(max_depht, cars):
     my_map = [[False for x in range(size_of_mapa)] for y in range(size_of_mapa)]
 
     root = Node(cars, my_map)
-    print(root)
-    print(root.my_map)
+    d_stack = deque()
+    d_stack.appendleft(root)
+    temp_state = root
     while d != max_depht:
 
+        if len(d_stack) == 0:
+            return False
+
+        new_temp_state = copy.deepcopy(temp_state)
+
+        for car in temp_state.cars:
+
+            # najskor posuniem kazde auticko o max krokov
+            # pohyb(stav, car_id, distance_to_go)
+            for distance_to_go in range(size_of_mapa - car.size):
+
+                if car.orientation == "ver":
+                    if can_go(car, "go_up"):
+                        temp_car = copy.deepcopy(car)
+                        if go_up(new_temp_state, temp_car.id, distance_to_go):
+                            new_temp_state.car = temp_car
+                            d_stack.appendleft(copy.deepcopy(new_temp_state))
+                        else:
+                            del(temp_car)
+                    elif can_go(car, "go_down"):
+                        temp_car = copy.deepcopy(car)
+
+                        if go_down(new_temp_state, temp_car.id, distance_to_go):
+                            new_temp_state.car = temp_car
+                            d_stack.appendleft(copy.deepcopy(new_temp_state))
+                        else:
+                            del(temp_car)
+                    pass
+
+                elif car.orientation == "hor":
+                    if can_go(car, "go_left"):
+                        temp_car = copy.deepcopy(car)
+                        if go_up(new_temp_state, temp_car.id, distance_to_go):
+                            new_temp_state.car = temp_car
+                            d_stack.appendleft(copy.deepcopy(new_temp_state))
+                        else:
+                            del (temp_car)
+                    elif can_go(car, "go_right"):
+                        temp_car = copy.deepcopy(car)
+                        if go_down(new_temp_state, temp_car.id, distance_to_go):
+                            new_temp_state.car = temp_car
+                            d_stack.appendleft(copy.deepcopy(new_temp_state))
+                        else:
+                            del (temp_car)
+                    pass
+
+                pass
+            pass
+        d += 1
         pass
-    pass
+
+    return False
 
 # Defining main function
 def main():
@@ -162,7 +215,9 @@ def main():
 
     # print(cars)
     max_depht = int(input("Zadajte hĺku do akej chcete vyhladavat: "))
-    iterative_deepening_search(max_depht, cars)
+
+    if not iterative_deepening_search(max_depht, cars):
+        print("Riesenie sa nenaslo")
     pass
 
 if __name__ == "__main__":
