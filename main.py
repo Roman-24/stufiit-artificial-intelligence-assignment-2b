@@ -1,4 +1,5 @@
 
+import copy
 import collections
 
 size_of_mapa = None
@@ -97,12 +98,38 @@ def go_up(stav, car_id, distance_to_go):
     print(f"Nieje mozne posunut {car_id} go_up o {distance_to_go}")
     return False
 
-
+'''
+MAPA, STAV-uzol, Main()
+'''
 
 # class map: ???
 
-# class stav ???
+class Node:
+    global size_of_mapa
 
+    def __init__(self, cars, map):
+
+        # vytvorenie prazdnej map
+        if size_of_mapa > 0 or size_of_mapa != None:
+            map = [[False] * size_of_mapa for _ in range(size_of_mapa)]
+
+        for car in cars:
+
+            if car.size == 2:
+
+                if car.orientation == "hor":
+                    map[car.x][car.y] = True
+                    map[car.x + 1][car.y] = True
+
+                elif car.orientation == "ver":
+                    map[car.x][car.y] = True
+                    map[car.x][car.y + 1] = True
+
+            elif car.size == 3:
+
+                pass
+
+        pass
 
 
 def iterative_deepening_search(max_depht, cars):
