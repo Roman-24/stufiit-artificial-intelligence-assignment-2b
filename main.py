@@ -28,7 +28,6 @@ class Car:
         # hor (horizontalne) -> -
         self.orientation = orientation
 
-
 # funkcia skontroluje ci je predane auto je mozne sa pohnut v pozadovanom smere
 def can_go(car, smer):
 
@@ -49,7 +48,6 @@ def can_go(car, smer):
 '''
 POHYBOVANIE AUTICOK
 '''
-
 #(VPRAVO stav vozidlo počet) - go_right je HOR pohyb na ose X
 def go_right(stav, car_id, distance_to_go):
     car = stav.this_car(car_id)
@@ -101,29 +99,28 @@ def go_up(stav, car_id, distance_to_go):
 '''
 MAPA, STAV-uzol, Main()
 '''
+# funkcia urobi mapu pre aktualne auticka
+def creat_map(cars, temp_map):
+    for car in cars:
 
-# class map: ???
+        for i in range(car.size):
+            if car.orientation == "ver":
+                temp_map[car.y + i][car.x] = True
+            elif car.orientation == "hor":
+                temp_map[car.y][car.x + i] = True
 
-# v podstate je to vytvorenie pociatocneho uzla
+    return temp_map
+
 class Node:
+    # v podstate je to vytvorenie pociatocneho uzla
     global size_of_mapa
 
     def __init__(self, cars, temp_map):
-
-        for car in cars:
-
-            for i in range(car.size):
-                if car.orientation == "ver":
-                    temp_map[car.y + i][car.x] = True
-                elif car.orientation == "hor":
-                    temp_map[car.y][car.x + i] = True
-
-            pass
+        temp_map = creat_map(cars, temp_map)
         # atribúty
         self.cars = cars
         self.my_map = temp_map
         pass
-
 
 def iterative_deepening_search(max_depht, cars):
 
@@ -139,7 +136,6 @@ def iterative_deepening_search(max_depht, cars):
 
         pass
     pass
-
 
 # Defining main function
 def main():
@@ -168,7 +164,6 @@ def main():
     max_depht = int(input("Zadajte hĺku do akej chcete vyhladavat: "))
     iterative_deepening_search(max_depht, cars)
     pass
-
 
 if __name__ == "__main__":
     print("PyCharm starting..")
