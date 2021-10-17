@@ -2,7 +2,7 @@
 import copy
 import collections
 
-size_of_mapa = None
+size_of_mapa = 0
 
 auticka_dict = {
     1: "orange",
@@ -22,8 +22,8 @@ class Car:
         self.id = id
         # ako je dlhe, min je dva aby malo orientáciu
         self.size = size
-        self.x = x
-        self.y = y
+        self.x = int(x)
+        self.y = int(y)
         # ver (vertikalne) -> |
         # hor (horizontalne) -> -
         self.orientation = orientation
@@ -104,36 +104,40 @@ MAPA, STAV-uzol, Main()
 
 # class map: ???
 
+# v podstate je to vytvorenie pociatocneho uzla
 class Node:
     global size_of_mapa
 
-    def __init__(self, cars, map):
-
-        # vytvorenie prazdnej map
-        if size_of_mapa > 0 or size_of_mapa != None:
-            map = [[False] * size_of_mapa for _ in range(size_of_mapa)]
+    def __init__(self, cars, temp_map):
 
         for car in cars:
 
-            if car.size == 2:
+            for i in range(car.size):
+                if car.orientation == "ver":
+                    temp_map[car.y + i][car.x] = True
+                elif car.orientation == "hor":
+                    temp_map[car.y][car.x + i] = True
 
-                if car.orientation == "hor":
-                    map[car.x][car.y] = True
-                    map[car.x + 1][car.y] = True
-
-                elif car.orientation == "ver":
-                    map[car.x][car.y] = True
-                    map[car.x][car.y + 1] = True
-
-            elif car.size == 3:
-
-                pass
-
+            pass
+        # atribúty
+        self.cars = cars
+        self.my_map = temp_map
         pass
 
 
 def iterative_deepening_search(max_depht, cars):
 
+    d = 0
+
+    # vytvorenie prazdnej map
+    my_map = [[False for x in range(size_of_mapa)] for y in range(size_of_mapa)]
+
+    root = Node(cars, my_map)
+    print(root)
+    print(root.my_map)
+    while d != max_depht:
+
+        pass
     pass
 
 
@@ -149,7 +153,7 @@ def main():
             line = input_file.readline()
 
             if line.startswith("*"):
-                size_of_mapa = line.split(" ", 1)
+                size_of_mapa = int(line.split(" ", 1)[1][:-1])
             elif line.startswith("#"):
                 continue
             elif not line:
