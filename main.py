@@ -45,15 +45,21 @@ def can_go(car, smer, distance_to_go):
     if car.orientation == "ver":
 
         if smer == "go_up":
-            if car.x - distance_to_go >= 0:
+            if car.y - distance_to_go >= 0:
                 return True
         elif smer == "go_down":
-            if car.x + car.size + distance_to_go < size_of_mapa:
+            if car.y + car.size + distance_to_go < size_of_mapa:
                 return True
         else:
             return False
 
     pass
+
+def can_go_in_map(map, x, y):
+    if map[y][x]:
+        return True
+    else:
+        return False
 
 '''
 POHYBOVANIE AUTICOK
@@ -63,9 +69,10 @@ def go_right(stav, car_id, distance_to_go):
     car = stav.cars[car_id - 1]
 
     if can_go(car, "go_right", distance_to_go):
-        car.x += distance_to_go
-        print(f"Posunulo sa auto {auticka_dict[car_id]} go_right o {distance_to_go}")
-        return True
+        if can_go_in_map(stav.my_map, car.x + distance_to_go, car.y):
+            car.x += distance_to_go
+            print(f"Posunulo sa auto {auticka_dict[car_id]} go_right o {distance_to_go}")
+            return True
 
     print(f"Nieje mozne posunut {auticka_dict[car_id]} go_right o {distance_to_go}")
     return False
@@ -75,9 +82,10 @@ def go_left(stav, car_id, distance_to_go):
     car = stav.cars[car_id - 1]
 
     if can_go(car, "go_left", distance_to_go):
-        car.x -= distance_to_go
-        print(f"Posunulo sa auto {auticka_dict[car_id]} go_left o {distance_to_go}")
-        return True
+        if can_go_in_map(stav.my_map, car.x - distance_to_go, car.y):
+            car.x -= distance_to_go
+            print(f"Posunulo sa auto {auticka_dict[car_id]} go_left o {distance_to_go}")
+            return True
 
     print(f"Nieje mozne posunut {auticka_dict[car_id]} go_left o {distance_to_go}")
     return False
@@ -87,9 +95,10 @@ def go_down(stav, car_id, distance_to_go):
     car = stav.cars[car_id - 1]
 
     if can_go(car, "go_down", distance_to_go):
-        car.x += distance_to_go
-        print(f"Posunulo sa auto {auticka_dict[car_id]} go_down o {distance_to_go}")
-        return True
+        if can_go_in_map(stav.my_map, car.x, car.y + distance_to_go):
+            car.y += distance_to_go
+            print(f"Posunulo sa auto {auticka_dict[car_id]} go_down o {distance_to_go}")
+            return True
 
     print(f"Nieje mozne posunut {auticka_dict[car_id]} go_down o {distance_to_go}")
     return False
@@ -99,9 +108,10 @@ def go_up(stav, car_id, distance_to_go):
     car = stav.cars[car_id - 1]
 
     if can_go(car, "go_up", distance_to_go):
-        car.x -= distance_to_go
-        print(f"Posunulo sa auto {auticka_dict[car_id]} go_up o {distance_to_go}")
-        return True
+        if can_go_in_map(stav.my_map, car.x, car.y - distance_to_go):
+            car.y -= distance_to_go
+            print(f"Posunulo sa auto {auticka_dict[car_id]} go_up o {distance_to_go}")
+            return True
 
     print(f"Nieje mozne posunut {auticka_dict[car_id]} go_up o {distance_to_go}")
     return False
