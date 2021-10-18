@@ -29,17 +29,27 @@ class Car:
         self.orientation = orientation
 
 # funkcia skontroluje ci je predane auto je mozne sa pohnut v pozadovanom smere
-def can_go(car, smer):
+def can_go(car, smer, distance_to_go):
 
     if car.orientation == "hor":
-        if smer == "go_right" or smer == "go_left":
-            return True
+
+        if smer == "go_right":
+            if car.x + car.size + distance_to_go < size_of_mapa:
+                return True
+        elif smer == "go_left":
+            if car.x - distance_to_go >= 0:
+                return True
         else:
             return False
 
     if car.orientation == "ver":
-        if smer == "go_up" or smer == "go_down":
-            return True
+
+        if smer == "go_up":
+            if car.x - distance_to_go >= 0:
+                return True
+        elif smer == "go_down":
+            if car.x + car.size + distance_to_go < size_of_mapa:
+                return True
         else:
             return False
 
@@ -50,50 +60,50 @@ POHYBOVANIE AUTICOK
 '''
 #(VPRAVO stav vozidlo počet) - go_right je HOR pohyb na ose X
 def go_right(stav, car_id, distance_to_go):
-    car = stav.this_car(car_id)
+    car = stav.cars[car_id - 1]
 
-    if can_go(car, "hor"):
-        if car.x + distance_to_go < size_of_mapa:
-            car.x += distance_to_go
-            return True
+    if can_go(car, "go_right", distance_to_go):
+        car.x += distance_to_go
+        print(f"Posunulo sa auto {auticka_dict[car_id]} go_right o {distance_to_go}")
+        return True
 
-    print(f"Nieje mozne posunut {car_id} go_right o {distance_to_go}")
+    print(f"Nieje mozne posunut {auticka_dict[car_id]} go_right o {distance_to_go}")
     return False
 
 #(VLAVO stav vozidlo počet)
 def go_left(stav, car_id, distance_to_go):
-    car = stav.this_car(car_id)
+    car = stav.cars[car_id - 1]
 
-    if can_go(car, "hor"):
-        if car.x - distance_to_go >= 0:
-            car.x -= distance_to_go
-            return True
+    if can_go(car, "go_left", distance_to_go):
+        car.x -= distance_to_go
+        print(f"Posunulo sa auto {auticka_dict[car_id]} go_left o {distance_to_go}")
+        return True
 
-    print(f"Nieje mozne posunut {car_id} go_left o {distance_to_go}")
+    print(f"Nieje mozne posunut {auticka_dict[car_id]} go_left o {distance_to_go}")
     return False
 
 #(DOLE stav vozidlo počet)
 def go_down(stav, car_id, distance_to_go):
-    car = stav.this_car(car_id)
+    car = stav.cars[car_id - 1]
 
-    if can_go(car, "ver"):
-        if car.x + distance_to_go < size_of_mapa:
-            car.x += distance_to_go
-            return True
+    if can_go(car, "go_down", distance_to_go):
+        car.x += distance_to_go
+        print(f"Posunulo sa auto {auticka_dict[car_id]} go_down o {distance_to_go}")
+        return True
 
-    print(f"Nieje mozne posunut {car_id} go_down o {distance_to_go}")
+    print(f"Nieje mozne posunut {auticka_dict[car_id]} go_down o {distance_to_go}")
     return False
 
 #(HORE stav vozidlo počet)
 def go_up(stav, car_id, distance_to_go):
-    car = stav.this_car(car_id)
+    car = stav.cars[car_id - 1]
 
-    if can_go(car, "hor"):
-        if car.x - distance_to_go >= 0:
-            car.x -= distance_to_go
-            return True
+    if can_go(car, "go_up", distance_to_go):
+        car.x -= distance_to_go
+        print(f"Posunulo sa auto {auticka_dict[car_id]} go_up o {distance_to_go}")
+        return True
 
-    print(f"Nieje mozne posunut {car_id} go_up o {distance_to_go}")
+    print(f"Nieje mozne posunut {auticka_dict[car_id]} go_up o {distance_to_go}")
     return False
 
 '''
@@ -131,7 +141,7 @@ def iterative_deepening_search(max_depht, cars):
     # vytvorenie prazdnej map
     my_map = [[False for x in range(size_of_mapa)] for y in range(size_of_mapa)]
 
-    root = Node(cars, my_map)
+    root = Node(cars, my_map, None, None)
     d_stack = deque()
     d_stack.appendleft(root)
     temp_state = root
@@ -146,17 +156,17 @@ def iterative_deepening_search(max_depht, cars):
 
             # najskor posuniem kazde auticko o max krokov
             # pohyb(stav, car_id, distance_to_go)
-            for distance_to_go in range(size_of_mapa - car.size):
+            for distance_to_go in range(1 ,size_of_mapa - car.size):
 
                 if car.orientation == "ver":
-                    if can_go(car, "go_up"):
+                    if can_go(car, "go_up", distance_to_go):
                         temp_car = copy.deepcopy(car)
                         if go_up(new_temp_state, temp_car.id, distance_to_go):
                             new_temp_state.car = temp_car
                             d_stack.appendleft(copy.deepcopy(new_temp_state))
                         else:
                             del(temp_car)
-                    elif can_go(car, "go_down"):
+                    elif can_go(car, "go_down", distance_to_go):
                         temp_car = copy.deepcopy(car)
 
                         if go_down(new_temp_state, temp_car.id, distance_to_go):
@@ -167,16 +177,16 @@ def iterative_deepening_search(max_depht, cars):
                     pass
 
                 elif car.orientation == "hor":
-                    if can_go(car, "go_left"):
+                    if can_go(car, "go_left", distance_to_go):
                         temp_car = copy.deepcopy(car)
-                        if go_up(new_temp_state, temp_car.id, distance_to_go):
+                        if go_left(new_temp_state, temp_car.id, distance_to_go):
                             new_temp_state.car = temp_car
                             d_stack.appendleft(copy.deepcopy(new_temp_state))
                         else:
                             del (temp_car)
-                    elif can_go(car, "go_right"):
+                    elif can_go(car, "go_right", distance_to_go):
                         temp_car = copy.deepcopy(car)
-                        if go_down(new_temp_state, temp_car.id, distance_to_go):
+                        if go_right(new_temp_state, temp_car.id, distance_to_go):
                             new_temp_state.car = temp_car
                             d_stack.appendleft(copy.deepcopy(new_temp_state))
                         else:
