@@ -109,8 +109,14 @@ def go_up(stav, car_id, distance_to_go):
 '''
 MAPA, STAV-uzol, Main()
 '''
+
+# funkcia urobi prazdnu mapu
+def creat_empty_map():
+    return [[False for x in range(size_of_mapa)] for y in range(size_of_mapa)]
+
 # funkcia urobi mapu pre aktualne auticka
-def creat_map(cars, temp_map):
+def creat_map(cars):
+    temp_map = creat_empty_map()
     for car in cars:
 
         for i in range(car.size):
@@ -126,7 +132,7 @@ class Node:
     global size_of_mapa
 
     def __init__(self, cars, temp_map, previous_state, step):
-        temp_map = creat_map(cars, temp_map)
+        temp_map = creat_map(cars)
         # atribúty
         self.cars = cars
         self.my_map = temp_map
@@ -134,17 +140,25 @@ class Node:
         self.step_from_previous_state = step
         pass
 
+def creat_new_node(new_temp_state, temp_car, d_stack):
+    new_temp_state.cars[temp_car.id - 1] = temp_car
+    new_temp_state.my_map = creat_map(new_temp_state.cars)
+    d_stack.appendleft(new_temp_state)
+    return new_temp_state
+
+
 def iterative_deepening_search(max_depht, cars):
 
     d = 0
 
     # vytvorenie prazdnej map
-    my_map = [[False for x in range(size_of_mapa)] for y in range(size_of_mapa)]
 
-    root = Node(cars, my_map, None, None)
+    root = Node(cars, creat_empty_map(), None, None)
+
     d_stack = deque()
     d_stack.appendleft(root)
     temp_state = root
+
     while d != max_depht:
 
         if len(d_stack) == 0:
@@ -152,49 +166,37 @@ def iterative_deepening_search(max_depht, cars):
 
         new_temp_state = copy.deepcopy(temp_state)
 
-        for car in temp_state.cars:
+        for car in new_temp_state.cars:
 
             # najskor posuniem kazde auticko o max krokov
             # pohyb(stav, car_id, distance_to_go)
-            for distance_to_go in range(1 ,size_of_mapa - car.size):
+            for distance_to_go in range(1, size_of_mapa - car.size):
 
                 if car.orientation == "ver":
-                    if can_go(car, "go_up", distance_to_go):
-                        temp_car = copy.deepcopy(car)
-                        if go_up(new_temp_state, temp_car.id, distance_to_go):
-                            new_temp_state.car = temp_car
-                            d_stack.appendleft(copy.deepcopy(new_temp_state))
-                        else:
-                            del(temp_car)
-                    elif can_go(car, "go_down", distance_to_go):
-                        temp_car = copy.deepcopy(car)
 
-                        if go_down(new_temp_state, temp_car.id, distance_to_go):
-                            new_temp_state.car = temp_car
-                            d_stack.appendleft(copy.deepcopy(new_temp_state))
-                        else:
-                            del(temp_car)
+                    if can_go(car, "go_up", distance_to_go):
+                        if go_up(new_temp_state, car.id, distance_to_go):
+                            new_temp_state = creat_new_node(new_temp_state, car, d_stack)
+
+                    elif can_go(car, "go_down", distance_to_go):
+                        if go_down(new_temp_state, car.id, distance_to_go):
+                            new_temp_state = creat_new_node(new_temp_state, car, d_stack)
                     pass
 
                 elif car.orientation == "hor":
+
                     if can_go(car, "go_left", distance_to_go):
-                        temp_car = copy.deepcopy(car)
-                        if go_left(new_temp_state, temp_car.id, distance_to_go):
-                            new_temp_state.car = temp_car
-                            d_stack.appendleft(copy.deepcopy(new_temp_state))
-                        else:
-                            del (temp_car)
+                        if go_left(new_temp_state, car.id, distance_to_go):
+                            new_temp_state = creat_new_node(new_temp_state, car, d_stack)
+
                     elif can_go(car, "go_right", distance_to_go):
-                        temp_car = copy.deepcopy(car)
-                        if go_right(new_temp_state, temp_car.id, distance_to_go):
-                            new_temp_state.car = temp_car
-                            d_stack.appendleft(copy.deepcopy(new_temp_state))
-                        else:
-                            del (temp_car)
+                        if go_right(new_temp_state, car.id, distance_to_go):
+                            new_temp_state = creat_new_node(new_temp_state, car, d_stack)
                     pass
 
-                pass
-            pass
+                pass # ukoncenie loopu na posuvanie auticka
+            pass # testovanie vsetkych auticok
+        temp_state = new_temp_state
         d += 1
         pass
 
