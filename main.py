@@ -156,6 +156,11 @@ def creat_new_node(new_temp_state, temp_car, d_stack):
     d_stack.appendleft(new_temp_state)
     return new_temp_state
 
+def test_finish(car):
+    if car.x == size_of_mapa - 1:
+        return True
+    else:
+        return False
 
 def iterative_deepening_search(max_depht, cars):
 
@@ -205,6 +210,11 @@ def iterative_deepening_search(max_depht, cars):
                     pass
 
                 pass # ukoncenie loopu na posuvanie auticka
+
+            if test_finish(car):
+                print("Naslo sa riesenie!")
+                return True
+
             pass # testovanie vsetkych auticok
         temp_state = new_temp_state
         d += 1
