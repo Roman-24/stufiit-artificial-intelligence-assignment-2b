@@ -165,16 +165,18 @@ class Node:
         self.depth = depth
         pass
 
-def creat_new_node(new_temp_state, temp_car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go):
+def creat_new_node(old_state, temp_car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go):
 
-    new_temp_state.cars[temp_car.id - 1] = temp_car
-    new_temp_state.my_map = creat_map(new_temp_state.cars)
-    new_temp_state.step_from_previous_state = co_ma_dostalo_do_tohto_stavu
-    new_temp_state.distance_of_previous_step = distance_to_go
-    new_temp_state.depth = depth
+    state = copy.deepcopy(old_state)
 
-    d_stack.append(new_temp_state)
-    return new_temp_state
+    state.cars[temp_car.id - 1] = temp_car
+    state.my_map = creat_map(state.cars)
+    state.step_from_previous_state = co_ma_dostalo_do_tohto_stavu
+    state.distance_of_previous_step = distance_to_go
+    state.depth = depth
+
+    d_stack.append(state)
+
 
 def test_finish(car):
     if car.x == size_of_mapa - 1:
@@ -182,7 +184,7 @@ def test_finish(car):
     else:
         return False
 
-def dfs(cars, depth):
+def dfs(cars, max_depth):
 
     root = Node(cars, creat_empty_map(), None, None, 0)
     d_stack = deque()
@@ -190,49 +192,48 @@ def dfs(cars, depth):
 
     while len(d_stack) != 0:
 
-        temp_state = d_stack.pop()
+        state = d_stack.pop()
 
-        temp_state.depth += 1
-        if temp_state.depth > depth:
+        state.depth += 1
+        depth = state.depth
+        if state.depth > max_depth:
             return False
 
         # tento loop vytvára stavy v jednej vrstve
         # Node(self, cars, temp_map, previous_state, step, depth)
-        for car in temp_state.cars:
-
-            new_temp_state = copy.deepcopy(temp_state)
+        for car in state.cars:
 
             # najskor posuniem kazde auticko o max krokov
             # pohyb(stav, car_id, distance_to_go)
-            for distance_to_go in range(size_of_mapa, 1, -1):
+            for distance_to_go in range(1, size_of_mapa - car.size):
 
                 if car.orientation == "ver":
 
                     if can_go(car, "go_up", distance_to_go):
-                        if go_up(new_temp_state, car.id, distance_to_go) and new_temp_state.step_from_previous_state != "go_down":
+                        if go_up(state, car.id, distance_to_go) and state.step_from_previous_state != "go_down":
                             co_ma_dostalo_do_tohto_stavu = "go_up"
-                            new_temp_state = creat_new_node(new_temp_state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
+                            creat_new_node(state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
                             break
 
                     elif can_go(car, "go_down", distance_to_go):
-                        if go_down(new_temp_state, car.id, distance_to_go) and new_temp_state.step_from_previous_state != "go_up":
+                        if go_down(state, car.id, distance_to_go) and state.step_from_previous_state != "go_up":
                             co_ma_dostalo_do_tohto_stavu = "go_down"
-                            new_temp_state = creat_new_node(new_temp_state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
+                            creat_new_node(state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
                             break
                     pass # koniec ver pohybov
 
                 elif car.orientation == "hor":
 
                     if can_go(car, "go_left", distance_to_go):
-                        if go_left(new_temp_state, car.id, distance_to_go) and new_temp_state.step_from_previous_state != "go_right":
+                        if go_left(state, car.id, distance_to_go) and state.step_from_previous_state != "go_right":
                             co_ma_dostalo_do_tohto_stavu = "go_left"
-                            new_temp_state = creat_new_node(new_temp_state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
+                            creat_new_node(state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
                             break
 
                     elif can_go(car, "go_right", distance_to_go):
-                        if go_right(new_temp_state, car.id, distance_to_go) and new_temp_state.step_from_previous_state != "go_left":
+                        if go_right(state, car.id, distance_to_go) and state.step_from_previous_state != "go_left":
                             co_ma_dostalo_do_tohto_stavu = "go_right"
-                            new_temp_state = creat_new_node(new_temp_state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
+                            creat_new_node(state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
                             break
                     pass # koniec hor pohybov
 
@@ -241,19 +242,18 @@ def dfs(cars, depth):
             # kontrola ciela
             if auticka_dict[car.id] == "red":
                 if test_finish(car):
-                    print("Naslo sa riesenie!")
+                    print("\nNaslo sa riesenie!")
                     return True
 
-            temp_state = new_temp_state
             pass  # testovanie vsetkych auticok
 
 def iterative_deepening_search(max_depht, cars):
     d = 1
     # vytvorenie prazdnej map
     while d != max_depht:
-        if dfs(cars, d):
+        print(f"\n***** Pokus c. {d} ***** \n")
+        if dfs(copy.deepcopy(cars), d):
             return True
-        print("\n***** Ideme odznova ***** \n")
         d += 1
     return False
 
@@ -282,10 +282,10 @@ def main():
 
     # print(cars)
     # max_depht = int(input("Zadajte hĺku do akej chcete vyhladavat: "))
-    max_depht = 10
+    max_depht = 100
 
     if not iterative_deepening_search(max_depht, cars):
-        print("Riesenie sa nenaslo")
+        print("\nRiesenie sa nenaslo")
     pass
 
 if __name__ == "__main__":
