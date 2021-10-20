@@ -205,7 +205,7 @@ def dfs(cars, max_depth):
 
             # najskor posuniem kazde auticko o max krokov
             # pohyb(stav, car_id, distance_to_go)
-            for distance_to_go in range(1, size_of_mapa - car.size):
+            for distance_to_go in range(size_of_mapa - car.size, 1, -1):
 
                 if car.orientation == "ver":
 
@@ -282,7 +282,7 @@ def main():
 
     # print(cars)
     # max_depht = int(input("Zadajte hĺku do akej chcete vyhladavat: "))
-    max_depht = 100
+    max_depht = 5
 
     if not iterative_deepening_search(max_depht, cars):
         print("\nRiesenie sa nenaslo")
