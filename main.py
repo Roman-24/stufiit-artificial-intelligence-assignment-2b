@@ -55,21 +55,21 @@ def can_go(car, smer, distance_to_go):
 
     pass
 
-def can_go_in_map(map, x, y, distance_to_go, smer):
+def can_go_in_map(state, car, distance_to_go, smer):
 
     for i in range(1, distance_to_go):
 
         if smer == "go_right":
-            if map[y][x + i]:
+            if state.my_map[car.y][car.x + car.size + i]:
                 return False
         elif smer == "go_left":
-            if map[y][x - i]:
+            if state.my_map[car.y][car.x - i]:
                 return False
         elif smer == "go_up":
-            if map[y + i][x]:
+            if state.my_map[car.y - i][car.x]:
                 return False
         elif smer == "go_down":
-            if map[y - i][x]:
+            if state.my_map[car.y + car.size + i][car.x]:
                 return False
 
     return True
@@ -82,7 +82,7 @@ def go_right(stav, car_id, distance_to_go):
     car = stav.cars[car_id - 1]
 
     if can_go(car, "go_right", distance_to_go):
-        if can_go_in_map(stav.my_map, car.x + distance_to_go, car.y, distance_to_go, "go_right"):
+        if can_go_in_map(stav, car, distance_to_go, "go_right"):
             car.x += distance_to_go
             print(f"Posunulo sa auto {auticka_dict[car_id]} go_right o {distance_to_go}")
             return True
@@ -95,7 +95,7 @@ def go_left(stav, car_id, distance_to_go):
     car = stav.cars[car_id - 1]
 
     if can_go(car, "go_left", distance_to_go):
-        if can_go_in_map(stav.my_map, car.x - distance_to_go, car.y, distance_to_go, "go_left"):
+        if can_go_in_map(stav, car, distance_to_go, "go_left"):
             car.x -= distance_to_go
             print(f"Posunulo sa auto {auticka_dict[car_id]} go_left o {distance_to_go}")
             return True
@@ -108,7 +108,7 @@ def go_down(stav, car_id, distance_to_go):
     car = stav.cars[car_id - 1]
 
     if can_go(car, "go_down", distance_to_go):
-        if can_go_in_map(stav.my_map, car.x, car.y + distance_to_go, distance_to_go, "go_down"):
+        if can_go_in_map(stav, car, distance_to_go, "go_down"):
             car.y += distance_to_go
             print(f"Posunulo sa auto {auticka_dict[car_id]} go_down o {distance_to_go}")
             return True
@@ -121,7 +121,7 @@ def go_up(stav, car_id, distance_to_go):
     car = stav.cars[car_id - 1]
 
     if can_go(car, "go_up", distance_to_go):
-        if can_go_in_map(stav.my_map, car.x, car.y - distance_to_go, distance_to_go, go_up):
+        if can_go_in_map(stav, car, distance_to_go, "go_up"):
             car.y -= distance_to_go
             print(f"Posunulo sa auto {auticka_dict[car_id]} go_up o {distance_to_go}")
             return True
@@ -137,6 +137,9 @@ MAPA, STAV-uzol, Main()
 def creat_empty_map():
     return [[False for x in range(size_of_mapa)] for y in range(size_of_mapa)]
 
+def creat_empty_map_paper():
+    return [[0 for x in range(size_of_mapa)] for y in range(size_of_mapa)]
+
 # funkcia urobi mapu pre aktualne auticka
 def creat_map(cars):
     temp_map = creat_empty_map()
@@ -148,6 +151,16 @@ def creat_map(cars):
             elif car.orientation == "hor":
                 temp_map[car.y][car.x + i] = True
 
+    return temp_map
+
+def print_map(cars):
+    temp_map = creat_empty_map_paper()
+    for car in cars:
+        for i in range(car.size):
+            if car.orientation == "ver":
+                temp_map[car.y + i][car.x] = car.id
+            elif car.orientation == "hor":
+                temp_map[car.y][car.x + i] = car.id
     return temp_map
 
 class Node:
@@ -163,6 +176,7 @@ class Node:
         self.step_from_previous_state = step
         self.distance_of_previous_step = None
         self.depth = depth
+        self.printed_map = None
         pass
 
 def creat_new_node(old_state, temp_car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go):
@@ -174,6 +188,7 @@ def creat_new_node(old_state, temp_car, d_stack, depth, co_ma_dostalo_do_tohto_s
     state.step_from_previous_state = co_ma_dostalo_do_tohto_stavu
     state.distance_of_previous_step = distance_to_go
     state.depth = depth
+    state.printed_map = print_map(state.cars)
 
     d_stack.append(state)
 
@@ -205,7 +220,7 @@ def dfs(cars, max_depth):
 
             # najskor posuniem kazde auticko o max krokov
             # pohyb(stav, car_id, distance_to_go)
-            for distance_to_go in range(size_of_mapa - car.size, 1, -1):
+            for distance_to_go in range(size_of_mapa - car.size, 0, -1):
 
                 if car.orientation == "ver":
 
