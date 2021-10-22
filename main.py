@@ -1,17 +1,18 @@
-
+import sys
 from collections import deque
+from termcolor import colored, cprint
 import copy
 
 size_of_mapa = 0
 
 auticka_dict = {
-    1: "orange",
+    1: "white",
     2: "yellow",
-    3: "purple",
+    3: "magenta",
     4: "red",
-    5: "turquoise",
+    5: "cyan",
     6: "green",
-    7: "gray",
+    7: "grey",
     8: "blue",
 }
 
@@ -34,7 +35,7 @@ def can_go(car, smer, distance_to_go):
     if car.orientation == "hor":
 
         if smer == "go_right":
-            if car.x + car.size + distance_to_go < size_of_mapa:
+            if car.x + car.size + distance_to_go <= size_of_mapa:
                 return True
         elif smer == "go_left":
             if car.x - distance_to_go >= 0:
@@ -46,7 +47,7 @@ def can_go(car, smer, distance_to_go):
             if car.y - distance_to_go >= 0:
                 return True
         elif smer == "go_down":
-            if car.y + car.size + distance_to_go < size_of_mapa:
+            if car.y + car.size + distance_to_go <= size_of_mapa:
                 return True
 
     return False
@@ -79,7 +80,7 @@ def go_right(stav, car, distance_to_go):
     if can_go(car, "go_right", distance_to_go):
         if can_go_in_map(stav, car, distance_to_go, "go_right"):
             car.x += distance_to_go
-            print(f"Posunulo sa auto {auticka_dict[car.id]} go_right o {distance_to_go}")
+            # print(f"Posunulo sa auto {auticka_dict[car.id]} go_right o {distance_to_go}")
             return True
     # print(f"Nieje mozne posunut {auticka_dict[car_id]} go_right o {distance_to_go}")
     return False
@@ -90,7 +91,7 @@ def go_left(stav, car, distance_to_go):
     if can_go(car, "go_left", distance_to_go):
         if can_go_in_map(stav, car, distance_to_go, "go_left"):
             car.x -= distance_to_go
-            print(f"Posunulo sa auto {auticka_dict[car.id]} go_left o {distance_to_go}")
+            # print(f"Posunulo sa auto {auticka_dict[car.id]} go_left o {distance_to_go}")
             return True
     # print(f"Nieje mozne posunut {auticka_dict[car_id]} go_left o {distance_to_go}")
     return False
@@ -101,7 +102,7 @@ def go_down(stav, car, distance_to_go):
     if can_go(car, "go_down", distance_to_go):
         if can_go_in_map(stav, car, distance_to_go, "go_down"):
             car.y += distance_to_go
-            print(f"Posunulo sa auto {auticka_dict[car.id]} go_down o {distance_to_go}")
+            # print(f"Posunulo sa auto {auticka_dict[car.id]} go_down o {distance_to_go}")
             return True
     # print(f"Nieje mozne posunut {auticka_dict[car_id]} go_down o {distance_to_go}")
     return False
@@ -112,7 +113,7 @@ def go_up(stav, car, distance_to_go):
     if can_go(car, "go_up", distance_to_go):
         if can_go_in_map(stav, car, distance_to_go, "go_up"):
             car.y -= distance_to_go
-            print(f"Posunulo sa auto {auticka_dict[car.id]} go_up o {distance_to_go}")
+            # print(f"Posunulo sa auto {auticka_dict[car.id]} go_up o {distance_to_go}")
             return True
     # print(f"Nieje mozne posunut {auticka_dict[car_id]} go_up o {distance_to_go}")
     return False
@@ -147,6 +148,19 @@ def print_map(cars):
                 temp_map[car.y][car.x + i] = car.id
     return temp_map
 
+def term_print(cars):
+    points = print_map(cars)
+
+    for riadok in range(len(points)):
+        for stlpec in range(len(points[riadok])):
+            if points[riadok][stlpec] == 0:
+                print("*", end=" ")
+            else:
+                cprint(points[riadok][stlpec], auticka_dict[points[riadok][stlpec]], end=" ")
+                # print(points[riadok][stlpec], end=" ")
+        print()
+    print("----------------------")
+
 class Node:
     # v podstate je to vytvorenie pociatocneho uzla
     def __init__(self, cars):
@@ -162,7 +176,7 @@ class Node:
         self.susedia = []
         pass
 
-def creat_new_node(old_state, temp_car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go):
+def creat_new_node(old_state, temp_car, depth, distance_to_go): # sem este pridat smer ak tak
 
     state = copy.deepcopy(old_state)
 
@@ -170,92 +184,90 @@ def creat_new_node(old_state, temp_car, d_stack, depth, co_ma_dostalo_do_tohto_s
     state.cars[temp_car.id - 1] = temp_car
     state.my_map = creat_map(state.cars)
     state.printed_map = print_map(state.cars)
-    state.step_from_previous_state = co_ma_dostalo_do_tohto_stavu
+    # state.step_from_previous_state = co_ma_dostalo_do_tohto_stavu
     state.distance_of_previous_step = distance_to_go
-    state.visited = False
-    state.susedia = []
 
-    # d_stack.append(state)
+    # term_print(state.cars)
     # tu sa ked tak moze vypisat mapka
     return state
 
 def test_finish(car):
-    if car.x >= size_of_mapa - 1:
+    if car.x + car.size >= size_of_mapa:
         return True
     else:
         return False
 
-def dfs(cars, max_depth):
+def compare_pouzite_cars(cars):
+    global pouzite
 
-    # d_stack = deque()
-    d_stack = []
-    d_stack.append(Node(cars))
-    d = 0
+    for car in cars:
+        for cars_pouzite in pouzite:
+            for car_pouzite in cars_pouzite:
+                if car.id == car_pouzite.id and car.x == car_pouzite.x and car.y == car_pouzite.y:
+                    return True
+    return False
 
-    visited = []
-    while len(d_stack) != 0:
 
-        d += 1
-        state = d_stack.pop()
-        state.depth = d
-        depth = state.depth
+pouzite, nepouzite = [], []
+def dfs(state, depth):
+    global pouzite, nepouzite
 
-        if state.depth > max_depth:
-            continue
+    # kontrola ciela
+    if test_finish(state.cars[3]):
+        print("\nNaslo sa riesenie!")
+        return True
 
-        print("\nIdem do hlbky: " + str(d) + "\n")
+    if depth <= 0:
+        return False
 
-        if not state.visited:
-            state.visited = True
+    # tento loop vytvára stavy v jednej vrstve
+    # Node(self, cars, temp_map, previous_state, step, depth)
+    for temp_car in state.cars:
+        car = temp_car
+        # car = copy.deepcopy(temp_car)
 
-            # tento loop vytvára stavy v jednej vrstve
-            # Node(self, cars, temp_map, previous_state, step, depth)
-            for temp_car in state.cars:
-                car = copy.deepcopy(temp_car)
+        # najskor posuniem kazde auticko o max krokov
+        # pohyb(stav, car_id, distance_to_go)
+        for distance_to_go in range(1, size_of_mapa):
 
-                # najskor posuniem kazde auticko o max krokov
-                # pohyb(stav, car_id, distance_to_go)
-                for distance_to_go in range(1, size_of_mapa - car.size):
-                    co_ma_dostalo_do_tohto_stavu = ""
+            if car.orientation == "ver":
 
-                    if car.orientation == "ver":
+                if go_up(state, car, distance_to_go):
+                    temp_state = creat_new_node(state, car, depth, distance_to_go)
+                    state.susedia.append(temp_state)
 
-                        if go_up(state, car, distance_to_go):
-                            temp_state = creat_new_node(state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
-                            break
+                if go_down(state, car, distance_to_go):
+                    temp_state = creat_new_node(state, car, depth, distance_to_go)
+                    state.susedia.append(temp_state)
+            # koniec ver pohybov
 
-                        if go_down(state, car, distance_to_go):
-                            temp_state = (state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
-                            break
-                    # koniec ver pohybov
+            elif car.orientation == "hor":
 
-                    elif car.orientation == "hor":
+                if go_right(state, car, distance_to_go):
+                    temp_state = creat_new_node(state, car, depth, distance_to_go)
+                    state.susedia.append(temp_state)
 
-                        if go_left(state, car, distance_to_go):
-                            temp_state = creat_new_node(state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
-                            break
+                if go_left(state, car, distance_to_go):
+                    temp_state = creat_new_node(state, car, depth, distance_to_go)
+                    state.susedia.append(temp_state)
+            # koniec hor pohybov
+        state.visited = True
 
-                        if go_right(state, car, distance_to_go):
-                            temp_state = creat_new_node(state, car, d_stack, depth, co_ma_dostalo_do_tohto_stavu, distance_to_go)
-                            break
-                    # koniec hor pohybov
+        for sused in state.susedia:
+            if not sused.visited:
+                dfs(sused, depth - 1)
 
-                    # ukoncenie loopu na posuvanie auticka
+    return False
 
-                # kontrola ciela
-                if auticka_dict[car.id] == "red":
-                    if test_finish(car):
-                        print("\nNaslo sa riesenie!")
-                        return True
-
-            # koniec testovanie vsetkych auticok
+    # koniec testovanie vsetkych auticok
 
 def iterative_deepening_search(max_depht, cars):
+    global pouzite, nepouzite
     d = 1
     # vytvorenie prazdnej map
     while d != max_depht:
-        print(f"\n***** Pokus c. {d}, taka je aj max hlbka ***** \n")
-        if dfs(copy.deepcopy(cars), d):
+        print(f"***** Pokus c. {d}, taka je aj max hlbka ***** \n")
+        if dfs(Node(cars), d):
             return True
         d += 1
     return False
@@ -284,7 +296,7 @@ def main():
                 cars.append(Car(int(id), int(size), int(x), int(y), orientation[:-1]))
 
     # max_depht = int(input("Zadajte hĺku do akej chcete vyhladavat: "))
-    max_depht = 500
+    max_depht = 5
 
     if not iterative_deepening_search(max_depht, cars):
         print("\nRiesenie sa nenaslo")
@@ -292,5 +304,6 @@ def main():
 
 if __name__ == "__main__":
     print("PyCharm starting..")
+    # sys.stdout = open("file.txt", "w")
     main()
     # end of program
