@@ -170,13 +170,12 @@ class Node:
         self.my_map = creat_map(cars)
         self.printed_map = None
         self.previous_state = None
-        self.step_from_previous_state = None
-        self.distance_of_previous_step = None
+        self.co_sa_udialo = "start"
         self.visited = False
         self.susedia = []
         pass
 
-def creat_new_node(old_state, temp_car, depth, distance_to_go): # sem este pridat smer ak tak
+def creat_new_node(old_state, temp_car, depth, step, distance_to_go): # sem este pridat smer ak tak
 
     state = copy.deepcopy(old_state)
 
@@ -184,36 +183,40 @@ def creat_new_node(old_state, temp_car, depth, distance_to_go): # sem este prida
     state.cars[temp_car.id - 1] = temp_car
     state.my_map = creat_map(state.cars)
     state.printed_map = print_map(state.cars)
-    # state.step_from_previous_state = co_ma_dostalo_do_tohto_stavu
-    state.distance_of_previous_step = distance_to_go
+    state.co_sa_udialo = f"auto {auticka_dict[temp_car.id]} islo {step} o {distance_to_go}"
+    state.previous_state = old_state
 
-    # term_print(state.cars)
+    term_print(state.cars)
     # tu sa ked tak moze vypisat mapka
     return state
 
-def test_finish(car):
+def test_finish(state, temp_car):
+    flag = False
+    temp_state = copy.deepcopy(state)
+    car = copy.deepcopy(temp_car)
+
     if car.x + car.size >= size_of_mapa:
+        flag = True
+
+    for distance_to_go in range(1, size_of_mapa - 2):
+        if go_left(temp_state, car, distance_to_go):
+            if car.x + car.size >= size_of_mapa:
+                flag = True
+
+    if flag:
+        act = state
+        while act != None:
+            print(act.co_sa_udialo)
+            act = act.previous_state
         return True
-    else:
-        return False
 
-def compare_pouzite_cars(cars):
-    global pouzite
-
-    for car in cars:
-        for cars_pouzite in pouzite:
-            for car_pouzite in cars_pouzite:
-                if car.id == car_pouzite.id and car.x == car_pouzite.x and car.y == car_pouzite.y:
-                    return True
     return False
 
-
-pouzite, nepouzite = [], []
 def dfs(state, depth):
     global pouzite, nepouzite
 
     # kontrola ciela
-    if test_finish(state.cars[3]):
+    if test_finish(state, state.cars[3]):
         print("\nNaslo sa riesenie!")
         return True
 
@@ -233,22 +236,22 @@ def dfs(state, depth):
             if car.orientation == "ver":
 
                 if go_up(state, car, distance_to_go):
-                    temp_state = creat_new_node(state, car, depth, distance_to_go)
+                    temp_state = creat_new_node(state, car, depth, "go_up", distance_to_go)
                     state.susedia.append(temp_state)
 
                 if go_down(state, car, distance_to_go):
-                    temp_state = creat_new_node(state, car, depth, distance_to_go)
+                    temp_state = creat_new_node(state, car, depth, "go_down", distance_to_go)
                     state.susedia.append(temp_state)
             # koniec ver pohybov
 
             elif car.orientation == "hor":
 
                 if go_right(state, car, distance_to_go):
-                    temp_state = creat_new_node(state, car, depth, distance_to_go)
+                    temp_state = creat_new_node(state, car, depth, "do_right", distance_to_go)
                     state.susedia.append(temp_state)
 
                 if go_left(state, car, distance_to_go):
-                    temp_state = creat_new_node(state, car, depth, distance_to_go)
+                    temp_state = creat_new_node(state, car, depth, "go_left", distance_to_go)
                     state.susedia.append(temp_state)
             # koniec hor pohybov
         state.visited = True
@@ -257,9 +260,8 @@ def dfs(state, depth):
             if not sused.visited:
                 dfs(sused, depth - 1)
 
-    return False
-
     # koniec testovanie vsetkych auticok
+    return False
 
 def iterative_deepening_search(max_depht, cars):
     global pouzite, nepouzite
@@ -296,7 +298,7 @@ def main():
                 cars.append(Car(int(id), int(size), int(x), int(y), orientation[:-1]))
 
     # max_depht = int(input("Zadajte hĺku do akej chcete vyhladavat: "))
-    max_depht = 5
+    max_depht = 6
 
     if not iterative_deepening_search(max_depht, cars):
         print("\nRiesenie sa nenaslo")
