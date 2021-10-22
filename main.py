@@ -186,7 +186,6 @@ def creat_new_node(old_state, temp_car, depth, step, distance_to_go): # sem este
     state.co_sa_udialo = f"auto {auticka_dict[temp_car.id]} islo {step} o {distance_to_go}"
     state.previous_state = old_state
 
-    term_print(state.cars)
     # tu sa ked tak moze vypisat mapka
     return state
 
@@ -212,6 +211,17 @@ def test_finish(state, temp_car):
 
     return False
 
+pouzite, nepouzite = [], []
+def compare_pouzite_cars(cars):
+    global pouzite
+    if pouzite:
+        for car in cars:
+            for cars_pouzite in pouzite:
+                for car_pouzite in cars_pouzite.cars:
+                    if car.id == car_pouzite.id and car.x == car_pouzite.x and car.y == car_pouzite.y:
+                        return True
+    return False
+
 def dfs(state, depth):
     global pouzite, nepouzite
 
@@ -226,39 +236,44 @@ def dfs(state, depth):
     # tento loop vytvára stavy v jednej vrstve
     # Node(self, cars, temp_map, previous_state, step, depth)
     for temp_car in state.cars:
-        car = temp_car
-        # car = copy.deepcopy(temp_car)
+        car = copy.deepcopy(temp_car)
 
         # najskor posuniem kazde auticko o max krokov
         # pohyb(stav, car_id, distance_to_go)
-        for distance_to_go in range(1, size_of_mapa):
+        for distance_to_go in range(1, size_of_mapa - car.size):
 
             if car.orientation == "ver":
 
                 if go_up(state, car, distance_to_go):
                     temp_state = creat_new_node(state, car, depth, "go_up", distance_to_go)
-                    state.susedia.append(temp_state)
+                    if not compare_pouzite_cars(temp_state.cars):
+                        nepouzite.append(temp_state)
 
                 if go_down(state, car, distance_to_go):
                     temp_state = creat_new_node(state, car, depth, "go_down", distance_to_go)
-                    state.susedia.append(temp_state)
+                    if not compare_pouzite_cars(temp_state.cars):
+                        nepouzite.append(temp_state)
             # koniec ver pohybov
 
             elif car.orientation == "hor":
 
                 if go_right(state, car, distance_to_go):
                     temp_state = creat_new_node(state, car, depth, "do_right", distance_to_go)
-                    state.susedia.append(temp_state)
+                    if not compare_pouzite_cars(temp_state.cars):
+                        nepouzite.append(temp_state)
 
                 if go_left(state, car, distance_to_go):
                     temp_state = creat_new_node(state, car, depth, "go_left", distance_to_go)
-                    state.susedia.append(temp_state)
+                    if not compare_pouzite_cars(temp_state.cars):
+                        nepouzite.append(temp_state)
             # koniec hor pohybov
-        state.visited = True
 
-        for sused in state.susedia:
-            if not sused.visited:
-                dfs(sused, depth - 1)
+    pouzite.append(state)
+    if len(nepouzite) > 0:
+        state = nepouzite[len(nepouzite) - 1]
+        nepouzite.pop()
+        term_print(state.cars)
+        dfs(state, depth - 1)
 
     # koniec testovanie vsetkych auticok
     return False
