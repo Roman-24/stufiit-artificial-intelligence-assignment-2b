@@ -4,6 +4,7 @@ from termcolor import colored, cprint
 import copy
 
 size_of_mapa = 0
+d_stack = []
 
 auticka_dict = {
     1: "white",
@@ -32,7 +33,7 @@ class Car:
     # porovnavanie objetkov podla: https://www.pythontutorial.net/python-oop/python-__eq__/
     def __eq__(self, other):
         if isinstance(other, Car):
-            return self.x == other.x and self.y == other.y and self.orientation == other.orientation and self.size == other.size
+            return self.x == other.x and self.y == other.y and self.orientation == other.orientation
 
 class State:
     def __init__(self, crossroad, cars, depth, parent):
@@ -45,7 +46,7 @@ class State:
     # porovnavanie objetkov podla: https://www.pythontutorial.net/python-oop/python-__eq__/
     def __eq__(self, other):
         if isinstance(other, State):
-            return self.cars == other.cars and self.crossroad == other.crossroad
+            return self.cars == other.cars
 
 '''
 POHYBOVANIE AUTICOK
@@ -151,7 +152,8 @@ def test_finish(state):
         return True
     return False
 
-def move_objs(state, id, visited, d_stack, depth, smer):
+def move_objs(state, id, visited, depth, smer):
+    global d_stack
 
     steps = max_of_obj_step(state.cars[id - 1], state.crossroad, smer)
     temp_state = copy.deepcopy(state)
@@ -193,7 +195,7 @@ def move_objs(state, id, visited, d_stack, depth, smer):
     return False
 
 def dfs(state, depth):
-    d_stack = [state]
+    global d_stack
     visited = []
 
     while 1 != 0:
@@ -208,14 +210,14 @@ def dfs(state, depth):
         for car in state.cars:
 
             if car.orientation == "hor":
-                if move_objs(state, car.id, visited, d_stack, depth, "go_right"):
+                if move_objs(state, car.id, visited, depth, "go_right"):
                     term_print(state.cars)
                     return True
-                move_objs(state, car.id, visited, d_stack, depth, "go_left")
+                move_objs(state, car.id, visited, depth, "go_left")
 
             elif car.orientation == "ver":
-                move_objs(state, car.id, visited, d_stack, depth, "go_down")
-                move_objs(state, car.id, visited, d_stack, depth, "go_up")
+                move_objs(state, car.id, visited, depth, "go_down")
+                move_objs(state, car.id, visited, depth, "go_up")
 
     return False
 
@@ -233,15 +235,17 @@ def root_state(max_depht, cars):
                 crossroad[car.y][car.x + i] = True
 
     root_state = State(crossroad, cars, 0, None)
-    term_print(root_state.cars)
     return root_state
 
 def iterative_deepening_search(max_depht, cars):
-
+    global d_stack
     d = 0
+
+    term_print(cars)
     while d != max_depht:
-        print(f"***** Pokus c. {d}, taka je aj max hlbka ***** \n")
+        print(f"***** Pokus c. {d} *****")
         state = root_state(max_depht, cars)
+        d_stack.append(state)
         if dfs(state, d):
             return True
         d += 1
