@@ -32,7 +32,7 @@ class Car:
 # funkcia skontroluje ci je predane auto je mozne sa pohnut v pozadovanom smere
 def can_go(state, car, smer, distance_to_go):
 
-    for i in range(0, distance_to_go):
+    for i in range(distance_to_go):
 
         if car.orientation == "hor":
 
@@ -65,6 +65,7 @@ POHYBOVANIE AUTICOK
 #(VPRAVO stav vozidlo počet) - go_right je HOR pohyb na ose X
 def go_right(stav, car, distance_to_go):
     car.x += distance_to_go
+    stav.my_map = creat_map(stav.cars)
     # print(f"Posunulo sa auto {auticka_dict[car.id]} go_right o {distance_to_go}")
     # print(f"Nieje mozne posunut {auticka_dict[car_id]} go_right o {distance_to_go}")
     pass
@@ -72,6 +73,7 @@ def go_right(stav, car, distance_to_go):
 #(VLAVO stav vozidlo počet)
 def go_left(stav, car, distance_to_go):
     car.x -= distance_to_go
+    stav.my_map = creat_map(stav.cars)
     # print(f"Posunulo sa auto {auticka_dict[car.id]} go_left o {distance_to_go}")
     # print(f"Nieje mozne posunut {auticka_dict[car_id]} go_left o {distance_to_go}")
     pass
@@ -79,6 +81,7 @@ def go_left(stav, car, distance_to_go):
 #(DOLE stav vozidlo počet)
 def go_down(stav, car, distance_to_go):
     car.y += distance_to_go
+    stav.my_map = creat_map(stav.cars)
     # print(f"Posunulo sa auto {auticka_dict[car.id]} go_down o {distance_to_go}")
     # print(f"Nieje mozne posunut {auticka_dict[car_id]} go_down o {distance_to_go}")
     pass
@@ -86,6 +89,7 @@ def go_down(stav, car, distance_to_go):
 #(HORE stav vozidlo počet)
 def go_up(stav, car, distance_to_go):
     car.y -= distance_to_go
+    stav.my_map = creat_map(stav.cars)
     # print(f"Posunulo sa auto {auticka_dict[car.id]} go_up o {distance_to_go}")
     # print(f"Nieje mozne posunut {auticka_dict[car_id]} go_up o {distance_to_go}")
     pass
@@ -193,6 +197,7 @@ def compare_pouzite_cars(cars):
 def dfs(state, depth):
     global pouzite, nepouzite
 
+    pouzite.append(state)
     # kontrola ciela
     if test_finish(state, state.cars[3]):
         print("\nNaslo sa riesenie!")
@@ -203,7 +208,7 @@ def dfs(state, depth):
 
     # tento loop vytvára stavy v jednej vrstve
     for car in state.cars:
-        for distance_to_go in range(1, size_of_mapa - car.size):
+        for distance_to_go in range(size_of_mapa - car.size, 1, -1):
         # can_go(state, car, smer, distance_to_go)
         # pohyb(stav, car_id, distance_to_go)
 
@@ -215,7 +220,7 @@ def dfs(state, depth):
                     if not compare_pouzite_cars(temp_state.cars):
                         nepouzite.append(temp_state)
 
-                elif can_go(state, car, "go_down", distance_to_go):
+                if can_go(state, car, "go_down", distance_to_go):
                     go_down(state, car, distance_to_go)
                     temp_state = creat_new_node(state, car, depth, "go_down", distance_to_go)
                     if not compare_pouzite_cars(temp_state.cars):
@@ -237,7 +242,6 @@ def dfs(state, depth):
                         nepouzite.append(temp_state)
             # koniec hor pohybov
 
-    pouzite.append(state)
     if len(nepouzite) > 0:
         state = nepouzite[len(nepouzite) - 1]
         nepouzite.pop()
@@ -253,6 +257,7 @@ def iterative_deepening_search(max_depht, cars):
     # vytvorenie prazdnej map
     while d != max_depht:
         print(f"***** Pokus c. {d}, taka je aj max hlbka ***** \n")
+        pouzite, nepouzite = [], []
         if dfs(Node(cars), d):
             return True
         d += 1
@@ -282,7 +287,7 @@ def main():
                 cars.append(Car(int(id), int(size), int(x), int(y), orientation[:-1]))
 
     # max_depht = int(input("Zadajte hĺku do akej chcete vyhladavat: "))
-    max_depht = 6
+    max_depht = 10
 
     if not iterative_deepening_search(max_depht, cars):
         print("\nRiesenie sa nenaslo")
