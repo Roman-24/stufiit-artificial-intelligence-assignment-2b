@@ -29,11 +29,10 @@ class Car:
         # hor (horizontalne) -> -
         self.orientation = orientation
 
+    # porovnavanie objetkov podla: https://www.pythontutorial.net/python-oop/python-__eq__/
     def __eq__(self, other):
-        if not isinstance(other, Car):
-            return NotImplemented
-        else:
-            return  self.x == other.x and self.y == other.y and self.orientation == other.orientation and self.size == other.size
+        if isinstance(other, Car):
+            return self.x == other.x and self.y == other.y and self.orientation == other.orientation and self.size == other.size
 
 class State:
     def __init__(self, crossroad, cars, depth, parent):
@@ -43,28 +42,10 @@ class State:
         self.note = ""
         self.parent = parent
 
+    # porovnavanie objetkov podla: https://www.pythontutorial.net/python-oop/python-__eq__/
     def __eq__(self, other):
-        if not isinstance(other, State):
-            return NotImplemented
-        else:
-            return self.crossroad == other.crossroad and self.cars == other.cars
-
-def root_state(max_depht, cars):
-    crossroad = [[False for x in range(size_of_mapa)] for y in range(size_of_mapa)]
-
-    for car in cars:
-
-        for i in range(car.size):
-
-            if car.orientation == "ver":
-                crossroad[car.y + i][car.x] = True
-
-            elif car.orientation == "hor":
-                crossroad[car.y][car.x + i] = True
-
-    root_state = State(crossroad, cars, 0, None)
-    term_print(root_state.cars)
-    return root_state
+        if isinstance(other, State):
+            return self.cars == other.cars and self.crossroad == other.crossroad
 
 '''
 POHYBOVANIE AUTICOK
@@ -137,19 +118,19 @@ def max_of_obj_step(car, crossroad, smer):
                 break
             steps += 1
 
-    if smer == "go_left":
+    elif smer == "go_left":
         while car.x - steps - 1 >= 0:
             if crossroad[car.y][car.x - steps - 1]:
                 break
             steps += 1
 
-    if smer == "go_down":
+    elif smer == "go_down":
         while car.y + car.size + steps < size_of_mapa:
             if crossroad[car.y + car.size + steps][car.x]:
                 break
             steps += 1
 
-    if smer == "go_up":
+    elif smer == "go_up":
         while car.y - steps - 1 >= 0:
             if crossroad[car.y - steps - 1][car.x]:
                 break
@@ -170,7 +151,7 @@ def test_finish(state):
         return True
     return False
 
-def move_objs(state, id, visited, stack, depth, smer):
+def move_objs(state, id, visited, d_stack, depth, smer):
 
     steps = max_of_obj_step(state.cars[id - 1], state.crossroad, smer)
     temp_state = copy.deepcopy(state)
@@ -200,26 +181,26 @@ def move_objs(state, id, visited, stack, depth, smer):
         if temp_state in visited:
             index = visited.index(temp_state)
             if temp_state == visited[index] and temp_state.depth < visited[index].depth:
-                stack.append(temp_state)
+                d_stack.append(temp_state)
                 visited.remove(visited[index])
                 visited.append(temp_state)
                 break
         else:
-            stack.append(temp_state)
+            d_stack.append(temp_state)
 
         if test_finish(state):
             return True
     return False
 
 def dfs(state, depth):
-    stack = [state]
+    d_stack = [state]
     visited = []
 
-    while True:
-        if len(stack) == 0:
-            print("Hlbka nieje postacujuca")
-            break
-        state = stack.pop()
+    while 1 != 0:
+
+        if len(d_stack) == 0:
+            return False
+        state = d_stack.pop()
         visited.append(state)
         if state.depth > depth:
             continue
@@ -227,16 +208,33 @@ def dfs(state, depth):
         for car in state.cars:
 
             if car.orientation == "hor":
-                if move_objs(state, car.id, visited, stack, depth, "go_right"):
+                if move_objs(state, car.id, visited, d_stack, depth, "go_right"):
                     term_print(state.cars)
                     return True
-                move_objs(state, car.id, visited, stack, depth, "go_left")
+                move_objs(state, car.id, visited, d_stack, depth, "go_left")
 
-            if car.orientation == "ver":
-                move_objs(state, car.id, visited, stack, depth, "go_down")
-                move_objs(state, car.id, visited, stack, depth, "go_up")
+            elif car.orientation == "ver":
+                move_objs(state, car.id, visited, d_stack, depth, "go_down")
+                move_objs(state, car.id, visited, d_stack, depth, "go_up")
 
     return False
+
+def root_state(max_depht, cars):
+    crossroad = [[False for x in range(size_of_mapa)] for y in range(size_of_mapa)]
+
+    for car in cars:
+
+        for i in range(car.size):
+
+            if car.orientation == "ver":
+                crossroad[car.y + i][car.x] = True
+
+            elif car.orientation == "hor":
+                crossroad[car.y][car.x + i] = True
+
+    root_state = State(crossroad, cars, 0, None)
+    term_print(root_state.cars)
+    return root_state
 
 def iterative_deepening_search(max_depht, cars):
 
