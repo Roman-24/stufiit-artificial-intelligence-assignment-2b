@@ -5,6 +5,8 @@ import time
 
 size_of_mapa = 0
 d_stack = []
+sum_of_state = 0
+t1, t0 = 0, 0
 
 auticka_dict = {
     1: "white",
@@ -140,6 +142,7 @@ def max_of_car_step(car, crossroad, smer):
     return steps + 1
 
 def printf_result(state):
+    global t1
     act = state
     mess = []
     while act != None:
@@ -147,6 +150,11 @@ def printf_result(state):
         act = act.parent
     for j in range(len(mess) - 1, -1, -1):
         print(mess[j])
+    term_print(state.cars)
+    t1 = time.time()
+    x = t1 - t0
+    print("Cas: %.2fs" % x)
+    exit()
 def test_finish(state):
     global i
     car_red = state.cars[3]
@@ -160,7 +168,7 @@ def test_finish(state):
             flag_skor = 1
 
     if flag_skor == 1:
-        state.note += f"\n Last: auticko({auticka_dict[car_red.id]} {car_red.id}) go_right o {i - car_red.size}"
+        state.note += f"\n Last: auticko({auticka_dict[car_red.id]} {car_red.id}) go_right o {size_of_mapa - car_red.x - car_red.size}"
         printf_result(state)
         return True
 
@@ -171,9 +179,10 @@ def test_finish(state):
 
 def move_objs(state, id, visited, depth, smer):
     global d_stack
-
+    global sum_of_state
     steps = max_of_car_step(state.cars[id - 1], state.crossroad, smer)
     temp_state = copy.deepcopy(state)
+    # sum_of_state += 1
     temp_state.parent = state
     temp_state.depth += 1
 
@@ -182,6 +191,7 @@ def move_objs(state, id, visited, depth, smer):
 
     for step in range(1, steps):
         temp_state = copy.deepcopy(temp_state)
+         # sum_of_state += 1
 
         if smer == "go_right":
             go_right(temp_state, id)
@@ -228,7 +238,6 @@ def dfs(state, depth):
 
             if car.orientation == "hor":
                 if move_objs(state, car.id, visited, depth, "go_right") or move_objs(state, car.id, visited, depth, "go_left"):
-                    term_print(state.cars)
                     return True
             elif car.orientation == "ver":
                 move_objs(state, car.id, visited, depth, "go_down")
@@ -253,6 +262,7 @@ def root_state(max_depht, cars):
     return root_state
 
 def iterative_deepening_search(max_depht, cars):
+    global t0
     t0 = time.time()
     global d_stack
     flag = False
@@ -267,9 +277,7 @@ def iterative_deepening_search(max_depht, cars):
             flag = True
             break
         d += 1
-    t1 = time.time()
-    x = t1-t0
-    print("Cas: %.2fs" % x)
+
     return flag
 
 # Defining main function
@@ -277,7 +285,19 @@ def main():
 
     cars = []
     global size_of_mapa
-    with open("vstup.txt", "r") as input_file:
+
+    vstup = int(input("1. vstup.txt\n2. vstup_origo.txt\n3. vstup_2.txt\n4. vstup_3.txt\nVyberte vstup: "))
+
+    if vstup == 1:
+        file = "vstup.txt"
+    if vstup == 2:
+        file = "vstup_origo.txt"
+    if vstup == 3:
+        file = "vstup_2.txt"
+    if vstup == 4:
+        file = "vstup_3.txt"
+
+    with open(file, "r") as input_file:
 
         # nacitanie a vytvorenie objektov auticka v liste cars podla vstupneho suboru
         while True:
@@ -295,8 +315,8 @@ def main():
                 id, size, x, y, orientation = line.split(",", 4)
                 cars.append(Car(int(id), int(size), int(x), int(y), orientation[:-1]))
 
-    # max_depht = int(input("Zadajte hĺku do akej chcete vyhladavat: "))
-    max_depht = 20
+    max_depht = int(input("Zadajte hĺku do akej chcete vyhladavat: "))
+    # max_depht = 20
 
     if not iterative_deepening_search(max_depht, cars):
         print("\nRiesenie sa nenaslo")
@@ -306,4 +326,5 @@ if __name__ == "__main__":
     print("PyCharm starting..")
     # sys.stdout = open("file.txt", "w")
     main()
+    #print("sum_of_state: ", sum_of_state)
     # end of program
