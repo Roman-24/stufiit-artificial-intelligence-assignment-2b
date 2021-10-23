@@ -1,5 +1,4 @@
 import sys
-from collections import deque
 from termcolor import colored, cprint
 import copy
 import time
@@ -111,7 +110,7 @@ def term_print(cars):
         print()
     print("----------------------")
 
-def max_of_obj_step(car, crossroad, smer):
+def max_of_car_step(car, crossroad, smer):
     steps = 0
 
     if smer == "go_right":
@@ -156,7 +155,7 @@ def test_finish(state):
 def move_objs(state, id, visited, depth, smer):
     global d_stack
 
-    steps = max_of_obj_step(state.cars[id - 1], state.crossroad, smer)
+    steps = max_of_car_step(state.cars[id - 1], state.crossroad, smer)
     temp_state = copy.deepcopy(state)
     temp_state.parent = state
     temp_state.depth += 1
