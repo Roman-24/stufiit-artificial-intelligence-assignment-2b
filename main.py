@@ -116,28 +116,28 @@ def max_of_car_step(car, crossroad, smer):
     if smer == "go_right":
         while car.x + car.size + steps < size_of_mapa:
             if crossroad[car.y][car.x + car.size + steps]:
-                break
+                return steps + 1
             steps += 1
 
     elif smer == "go_left":
         while car.x - steps - 1 >= 0:
             if crossroad[car.y][car.x - steps - 1]:
-                break
+                return steps + 1
             steps += 1
 
     elif smer == "go_down":
         while car.y + car.size + steps < size_of_mapa:
             if crossroad[car.y + car.size + steps][car.x]:
-                break
+                return steps + 1
             steps += 1
 
     elif smer == "go_up":
         while car.y - steps - 1 >= 0:
             if crossroad[car.y - steps - 1][car.x]:
-                break
+                return steps + 1
             steps += 1
 
-    return steps
+    return steps + 1
 
 def test_finish(state):
     car_red = state.cars[3]
@@ -163,7 +163,7 @@ def move_objs(state, id, visited, depth, smer):
     if temp_state.depth > depth:
         return 0
 
-    for step in range(1, steps + 1):
+    for step in range(1, steps):
         temp_state = copy.deepcopy(temp_state)
 
         if smer == "go_right":
@@ -181,10 +181,10 @@ def move_objs(state, id, visited, depth, smer):
         temp_state.note = f"auticko({auticka_dict[id]} {id}) {smer} o {step}"
 
         if temp_state in visited:
-            index = visited.index(temp_state)
-            if temp_state == visited[index] and temp_state.depth < visited[index].depth:
+            i = visited.index(temp_state)
+            if temp_state == visited[i] and temp_state.depth < visited[i].depth:
                 d_stack.append(temp_state)
-                visited.remove(visited[index])
+                visited.remove(visited[i])
                 visited.append(temp_state)
                 break
         else:
@@ -253,7 +253,7 @@ def iterative_deepening_search(max_depht, cars):
             break
         d += 1
     t1 = time.time()
-    print("Cas: ", t1-t0)
+    print(f"Cas: %.2fs" % t1-t0)
     return flag
 
 # Defining main function
