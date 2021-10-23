@@ -62,7 +62,9 @@ def root_state(max_depht, cars):
             elif car.orientation == "hor":
                 crossroad[car.y][car.x + i] = True
 
-    return State(crossroad, cars, 0, None)
+    root_state = State(crossroad, cars, 0, None)
+    term_print(root_state.cars)
+    return root_state
 
 '''
 POHYBOVANIE AUTICOK
@@ -154,8 +156,16 @@ def max_of_obj_step(car, crossroad, smer):
 
     return steps
 
-def test_finish(car_red):
+def test_finish(state):
+    car_red = state.cars[3]
     if car_red.x + car_red.size >= size_of_mapa:
+        act = state
+        mess = []
+        while act != None:
+            mess.append(act.note)
+            act = act.parent
+        for i in range(len(mess) - 1, 0, -1):
+            print(mess[i])
         return True
     return False
 
@@ -163,6 +173,7 @@ def move_objs(state, id, visited, stack, depth, smer):
 
     steps = max_of_obj_step(state.cars[id - 1], state.crossroad, smer)
     temp_state = copy.deepcopy(state)
+    temp_state.parent = state
     temp_state.depth += 1
 
     if temp_state.depth > depth:
@@ -183,6 +194,8 @@ def move_objs(state, id, visited, stack, depth, smer):
         elif smer == "go_up":
             go_up(temp_state, id)
 
+        temp_state.note = f"auticko({auticka_dict[id]} {id}) {smer} o {step}"
+
         if temp_state in visited:
             index = visited.index(temp_state)
             if temp_state == visited[index] and temp_state.depth < visited[index].depth:
@@ -193,7 +206,7 @@ def move_objs(state, id, visited, stack, depth, smer):
         else:
             stack.append(temp_state)
 
-        if test_finish(state.cars[3]):
+        if test_finish(state):
             return True
     return False
 
