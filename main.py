@@ -3,6 +3,7 @@ from termcolor import colored, cprint
 import copy
 import time
 
+# globalne premenne vyuzivane napriec programom
 size_of_mapa = 0
 d_stack = []
 sum_of_state = 0
@@ -112,6 +113,7 @@ def term_print(cars):
         print()
     print("----------------------")
 
+# kolko je mozne posunut dane auto vzhladom na mapu prislusneho stavu
 def max_of_car_step(car, crossroad, smer):
     steps = 0
 
@@ -120,19 +122,16 @@ def max_of_car_step(car, crossroad, smer):
             if crossroad[car.y][car.x + car.size + steps]:
                 return steps + 1
             steps += 1
-
     elif smer == "go_left":
         while car.x - steps - 1 >= 0:
             if crossroad[car.y][car.x - steps - 1]:
                 return steps + 1
             steps += 1
-
     elif smer == "go_down":
         while car.y + car.size + steps < size_of_mapa:
             if crossroad[car.y + car.size + steps][car.x]:
                 return steps + 1
             steps += 1
-
     elif smer == "go_up":
         while car.y - steps - 1 >= 0:
             if crossroad[car.y - steps - 1][car.x]:
@@ -141,24 +140,32 @@ def max_of_car_step(car, crossroad, smer):
 
     return steps + 1
 
+# vypis krokov pomocou prechadzania stavou od cieloveho k pociatocnemu
 def printf_result(state):
     global t1
     act = state
     mess = []
+    # prechadzaj stavy od cieloveho k zaciatocnemu
     while act != None:
         mess.append(act.note)
         act = act.parent
+    # vypisovanie stavou z listu zozadu aby sedelo poradie
     for j in range(len(mess) - 1, -1, -1):
         print(mess[j])
+    # farebny vypisok finalnej mapky
     term_print(state.cars)
+    # vypis casu trvania progrmau
     t1 = time.time()
     x = t1 - t0
     print("Cas: %.2fs" % x)
     exit()
+
+# otestuje ci moze cerveno auticko vyjst z krizovatky
 def test_finish(state):
     global i
     car_red = state.cars[3]
 
+    # test volnosti policok smerov vpravo od cerveneho auticka
     flag_skor = 0
     for i in range(car_red.x + car_red.size, size_of_mapa):
         if state.crossroad[car_red.y][i]:
@@ -166,29 +173,35 @@ def test_finish(state):
             break
         else:
             flag_skor = 1
-
+    # ak cervene auticko moze ist vpravo a vyjst z krizovatky
+    # tak zapis tento krok k doterajsim krokom
     if flag_skor == 1:
         state.note += f"\n Last: auticko({auticka_dict[car_red.id]} {car_red.id}) go_right o {size_of_mapa - car_red.x - car_red.size}"
         printf_result(state)
         return True
 
+    # este jedna podmienka pre kontrolu ciela
     if car_red.x + car_red.size >= size_of_mapa:
         printf_result(state)
         return True
     return False
 
+# funkcia na posun auticok
 def move_objs(state, id, visited, depth, smer):
     global d_stack
     global sum_of_state
     steps = max_of_car_step(state.cars[id - 1], state.crossroad, smer)
+    # vytvorenie noveho stavu
     temp_state = copy.deepcopy(state)
     # sum_of_state += 1
     temp_state.parent = state
     temp_state.depth += 1
 
+    # ak je stav nad povolenu hlbku tak koniec
     if temp_state.depth > depth:
-        return 0
+        return False
 
+    # vytvaraj stavy pre dane kroky
     for step in range(1, steps):
         temp_state = copy.deepcopy(temp_state)
          # sum_of_state += 1
@@ -205,18 +218,24 @@ def move_objs(state, id, visited, depth, smer):
         elif smer == "go_up":
             go_up(temp_state, id)
 
+        # zapis kroku v danom stave do daneho stavu
         temp_state.note = f"auticko({auticka_dict[id]} {id}) {smer} o {step}"
 
+        # ak uz stav bol navstiveny
         if temp_state in visited:
             i = visited.index(temp_state)
+            # ak je novy stav navstiveny ale je lepsi (ma mensiu hlbku)
             if temp_state == visited[i] and temp_state.depth < visited[i].depth:
+                # tak sa stavy vymenia
                 d_stack.append(temp_state)
                 visited.remove(visited[i])
                 visited.append(temp_state)
                 break
+        # ak nebol navstiveny zaradi sa do zasobniku na spracovanie
         else:
             d_stack.append(temp_state)
 
+        # otestovanie cielu pre dany stav
         if test_finish(state):
             return True
     return False
@@ -246,21 +265,23 @@ def dfs(state, depth):
     return False
 
 def root_state(max_depht, cars):
+    # vytvor prazdnu mapu, 2d pole vsade False
     crossroad = [[False for x in range(size_of_mapa)] for y in range(size_of_mapa)]
 
+    # vyznacenie policov na kt. stoja auticka
     for car in cars:
-
         for i in range(car.size):
-
             if car.orientation == "ver":
                 crossroad[car.y + i][car.x] = True
-
             elif car.orientation == "hor":
                 crossroad[car.y][car.x + i] = True
 
+    # vytvor root state
     root_state = State(crossroad, cars, 0, None)
     return root_state
 
+# postupne sa zvysuje hlbka az do maxima
+# pre danu hlbku sa zavola DFS
 def iterative_deepening_search(max_depht, cars):
     global t0
     t0 = time.time()
@@ -268,7 +289,9 @@ def iterative_deepening_search(max_depht, cars):
     flag = False
     d = 0
 
+    # vypis pociatocneho stavu (farebna mapka)
     term_print(cars)
+    # postupne zvysovanie hlbky
     while d != max_depht:
         print(f"***** Pokus c. {d} *****")
         state = root_state(max_depht, cars)
@@ -285,7 +308,7 @@ def main():
 
     cars = []
     global size_of_mapa
-
+    # vstup aky subor sa pouzije
     vstup = int(input("1. vstup.txt\n2. vstup_origo.txt\n3. vstup_2.txt\n4. vstup_3.txt\nVyberte vstup: "))
 
     if vstup == 1:
@@ -297,6 +320,7 @@ def main():
     if vstup == 4:
         file = "vstup_3.txt"
 
+    # nacitanie zvoleneho suboru so vstupmi
     with open(file, "r") as input_file:
 
         # nacitanie a vytvorenie objektov auticka v liste cars podla vstupneho suboru
@@ -318,8 +342,9 @@ def main():
     max_depht = int(input("Zadajte hĺku do akej chcete vyhladavat: "))
     # max_depht = 20
 
+    # ak neni riesenie
     if not iterative_deepening_search(max_depht, cars):
-        print("\nRiesenie sa nenaslo")
+        print("\nRiesenie sa nenaslo alebo neexistuje")
     pass
 
 if __name__ == "__main__":
