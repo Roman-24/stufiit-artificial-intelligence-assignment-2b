@@ -253,7 +253,8 @@ def iterative_deepening_search(max_depht, cars):
             break
         d += 1
     t1 = time.time()
-    print(f"Cas: %.2fs" % t1-t0)
+    x = t1-t0
+    print("Cas: %.2fs" % x)
     return flag
 
 # Defining main function
