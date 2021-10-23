@@ -33,13 +33,15 @@ class Car:
         if not isinstance(other, Car):
             return NotImplemented
         else:
-            return self.size == other.size and self.x == other.x and self.y == other.y and self.orientation == other.orientation
+            return  self.x == other.x and self.y == other.y and self.orientation == other.orientation and self.size == other.size
 
 class State:
-    def __init__(self, crossroad, cars, depth):
+    def __init__(self, crossroad, cars, depth, parent):
         self.crossroad = crossroad
         self.cars = cars
         self.depth = depth
+        self.note = ""
+        self.parent = parent
 
     def __eq__(self, other):
         if not isinstance(other, State):
@@ -60,8 +62,7 @@ def root_state(max_depht, cars):
             elif car.orientation == "hor":
                 crossroad[car.y][car.x + i] = True
 
-    # tu asi treba vymenit x a y
-    return State(crossroad, cars, 0)
+    return State(crossroad, cars, 0, None)
 
 '''
 POHYBOVANIE AUTICOK
@@ -135,7 +136,7 @@ def max_of_obj_step(car, crossroad, smer):
 
     if smer == "go_left":
         while car.x - steps - 1 >= 0:
-            if crossroad[car.y][car.x - car.size - 1]:
+            if crossroad[car.y][car.x - steps - 1]:
                 break
             steps += 1
 
@@ -154,7 +155,7 @@ def max_of_obj_step(car, crossroad, smer):
     return steps
 
 def test_finish(car_red):
-    if car_red.x + car_red.size >= size_of_mapa - 1:
+    if car_red.x + car_red.size >= size_of_mapa:
         return True
     return False
 
