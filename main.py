@@ -69,7 +69,6 @@ def root_state(max_depht, cars):
 '''
 POHYBOVANIE AUTICOK
 '''
-#(VPRAVO stav vozidlo počet)
 def go_right(state, id):
     car = state.cars[id - 1]
     if car.size == 2:
@@ -79,8 +78,6 @@ def go_right(state, id):
         state.crossroad[car.y][car.x] = False
         state.crossroad[car.y][car.x + 3] = True
     car.x += 1
-
-#(VLAVO stav vozidlo počet)
 def go_left(state, id):
     car = state.cars[id - 1]
     if car.size == 2:
@@ -90,8 +87,6 @@ def go_left(state, id):
         state.crossroad[car.y][car.x + 2] = False
         state.crossroad[car.y][car.x - 1] = True
     car.x -= 1
-
-#(DOLE stav vozidlo počet)
 def go_down(state, id):
     car = state.cars[id - 1]
     if car.size == 2:
@@ -101,8 +96,6 @@ def go_down(state, id):
         state.crossroad[car.y][car.x] = False
         state.crossroad[car.y + 3][car.x] = True
     car.y += 1
-
-#(HORE stav vozidlo počet)
 def go_up(state, id):
     car = state.cars[id - 1]
     if car.size == 2:
@@ -113,6 +106,7 @@ def go_up(state, id):
         state.crossroad[car.y - 1][car.x] = True
     car.y -= 1
 
+# vykreslovanie mapky farebne
 def print_map(cars):
     temp_map = [[0 for x in range(size_of_mapa)] for y in range(size_of_mapa)]
     for car in cars:
@@ -171,7 +165,7 @@ def test_finish(state):
         while act != None:
             mess.append(act.note)
             act = act.parent
-        for i in range(len(mess) - 1, 0, -1):
+        for i in range(len(mess) - 1, -1, -1):
             print(mess[i])
         return True
     return False
