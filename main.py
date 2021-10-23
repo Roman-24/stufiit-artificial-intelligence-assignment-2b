@@ -139,16 +139,33 @@ def max_of_car_step(car, crossroad, smer):
 
     return steps + 1
 
+def printf_result(state):
+    act = state
+    mess = []
+    while act != None:
+        mess.append(act.note)
+        act = act.parent
+    for j in range(len(mess) - 1, -1, -1):
+        print(mess[j])
 def test_finish(state):
+    global i
     car_red = state.cars[3]
+
+    flag_skor = 0
+    for i in range(car_red.x + car_red.size, size_of_mapa):
+        if state.crossroad[car_red.y][i]:
+            flag_skor = 2
+            break
+        else:
+            flag_skor = 1
+
+    if flag_skor == 1:
+        state.note += f"\n Last: auticko({auticka_dict[car_red.id]} {car_red.id}) go_right o {i - car_red.size}"
+        printf_result(state)
+        return True
+
     if car_red.x + car_red.size >= size_of_mapa:
-        act = state
-        mess = []
-        while act != None:
-            mess.append(act.note)
-            act = act.parent
-        for i in range(len(mess) - 1, -1, -1):
-            print(mess[i])
+        printf_result(state)
         return True
     return False
 
@@ -210,11 +227,9 @@ def dfs(state, depth):
         for car in state.cars:
 
             if car.orientation == "hor":
-                if move_objs(state, car.id, visited, depth, "go_right"):
+                if move_objs(state, car.id, visited, depth, "go_right") or move_objs(state, car.id, visited, depth, "go_left"):
                     term_print(state.cars)
                     return True
-                move_objs(state, car.id, visited, depth, "go_left")
-
             elif car.orientation == "ver":
                 move_objs(state, car.id, visited, depth, "go_down")
                 move_objs(state, car.id, visited, depth, "go_up")
