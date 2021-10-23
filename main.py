@@ -72,39 +72,46 @@ POHYBOVANIE AUTICOK
 #(VPRAVO stav vozidlo počet)
 def go_right(state, id):
     car = state.cars[id - 1]
-    for i in range(car.size):
-        state.crossroad[car.y][car.x + i] = False
+    if car.size == 2:
+        state.crossroad[car.y][car.x] = False
+        state.crossroad[car.y][car.x + 2] = True
+    elif car.size == 3:
+        state.crossroad[car.y][car.x] = False
+        state.crossroad[car.y][car.x + 3] = True
     car.x += 1
-    for i in range(car.size):
-        state.crossroad[car.y][car.x + i] = True
 
 #(VLAVO stav vozidlo počet)
 def go_left(state, id):
     car = state.cars[id - 1]
-    for i in range(car.size):
-        state.crossroad[car.y][car.x + i] = False
+    if car.size == 2:
+        state.crossroad[car.y][car.x + 1] = False
+        state.crossroad[car.y][car.x - 1] = True
+    elif car.size == 3:
+        state.crossroad[car.y][car.x + 2] = False
+        state.crossroad[car.y][car.x - 1] = True
     car.x -= 1
-    for i in range(car.size):
-        state.crossroad[car.y][car.x + i] = True
 
 #(DOLE stav vozidlo počet)
 def go_down(state, id):
     car = state.cars[id - 1]
-    for i in range(car.size):
-        state.crossroad[car.y + i][car.x] = False
+    if car.size == 2:
+        state.crossroad[car.y][car.x] = False
+        state.crossroad[car.y + 2][car.x] = True
+    elif car.size == 3:
+        state.crossroad[car.y][car.x] = False
+        state.crossroad[car.y + 3][car.x] = True
     car.y += 1
-    for i in range(car.size):
-        state.crossroad[car.y + i][car.x] = True
 
 #(HORE stav vozidlo počet)
 def go_up(state, id):
     car = state.cars[id - 1]
-    for i in range(car.size):
-        state.crossroad[car.y + i][car.x] = False
+    if car.size == 2:
+        state.crossroad[car.y + 1][car.x] = False
+        state.crossroad[car.y - 1][car.x] = True
+    elif car.size == 3:
+        state.crossroad[car.y + 2][car.x] = False
+        state.crossroad[car.y - 1][car.x] = True
     car.y -= 1
-    for i in range(car.size):
-        state.crossroad[car.y + i][car.x] = True
-
 
 def print_map(cars):
     temp_map = [[0 for x in range(size_of_mapa)] for y in range(size_of_mapa)]
