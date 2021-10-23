@@ -2,6 +2,7 @@ import sys
 from collections import deque
 from termcolor import colored, cprint
 import copy
+import time
 
 size_of_mapa = 0
 d_stack = []
@@ -238,7 +239,9 @@ def root_state(max_depht, cars):
     return root_state
 
 def iterative_deepening_search(max_depht, cars):
+    t0 = time.time()
     global d_stack
+    flag = False
     d = 0
 
     term_print(cars)
@@ -247,9 +250,12 @@ def iterative_deepening_search(max_depht, cars):
         state = root_state(max_depht, cars)
         d_stack.append(state)
         if dfs(state, d):
-            return True
+            flag = True
+            break
         d += 1
-    return False
+    t1 = time.time()
+    print("Cas: ", t1-t0)
+    return flag
 
 # Defining main function
 def main():
