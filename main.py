@@ -157,6 +157,7 @@ def printf_result(state):
     # vypis casu trvania progrmau
     t1 = time.time()
     x = t1 - t0
+    print("sum_of_state: ", sum_of_state)
     print("Cas: %.2fs" % x)
     exit()
 
@@ -193,7 +194,7 @@ def move_objs(state, id, visited, depth, smer):
     steps = max_of_car_step(state.cars[id - 1], state.crossroad, smer)
     # vytvorenie noveho stavu
     temp_state = copy.deepcopy(state)
-    # sum_of_state += 1
+    sum_of_state += 1
     temp_state.parent = state
     temp_state.depth += 1
 
@@ -204,7 +205,7 @@ def move_objs(state, id, visited, depth, smer):
     # vytvaraj stavy pre dane kroky
     for step in range(1, steps):
         temp_state = copy.deepcopy(temp_state)
-         # sum_of_state += 1
+        sum_of_state += 1
 
         if smer == "go_right":
             go_right(temp_state, id)
@@ -253,6 +254,7 @@ def dfs(state, depth):
         if state.depth > depth:
             continue
 
+        # riešenie daného stavu
         for car in state.cars:
 
             if car.orientation == "hor":
@@ -351,5 +353,5 @@ if __name__ == "__main__":
     print("PyCharm starting..")
     # sys.stdout = open("file.txt", "w")
     main()
-    #print("sum_of_state: ", sum_of_state)
+    print("sum_of_state: ", sum_of_state)
     # end of program
