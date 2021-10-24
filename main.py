@@ -311,7 +311,7 @@ def main():
     cars = []
     global size_of_mapa
     # vstup aky subor sa pouzije
-    vstup = int(input("1. vstup.txt\n2. vstup_origo.txt\n3. vstup_2.txt\n4. vstup_3.txt\nVyberte vstup: "))
+    vstup = int(input("1. vstup.txt\n2. vstup_origo.txt\n3. vstup_2.txt\n4. vstup_3.txt\n5. vstup_4.txt\n6. vstup_5.txt\n7. vstup_6.txt\nVyberte vstup: "))
 
     if vstup == 1:
         file = "vstup.txt"
@@ -321,6 +321,12 @@ def main():
         file = "vstup_2.txt"
     if vstup == 4:
         file = "vstup_3.txt"
+    if vstup == 5:
+        file = "vstup_4.txt"
+    if vstup == 6:
+        file = "vstup_5.txt"
+    if vstup == 7:
+        file = "vstup_6.txt"
 
     # nacitanie zvoleneho suboru so vstupmi
     with open(file, "r") as input_file:

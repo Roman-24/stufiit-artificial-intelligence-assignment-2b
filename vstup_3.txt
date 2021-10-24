@@ -1,0 +1,7 @@
+* 6
+#id,size,x,y,orientation
+1,2,2,1,hor
+2,2,0,2,ver
+3,3,1,1,ver
+4,2,0,4,hor
+5,3,3,2,ver

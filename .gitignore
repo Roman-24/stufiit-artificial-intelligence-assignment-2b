@@ -130,6 +130,5 @@ dmypy.json
 
 # my
 .idea
-*.txt
 *.pcap
 temp.py
